@@ -9,7 +9,6 @@ import (
 )
 
 func GetTasks(c *gin.Context, files []model.DocumentToIndex) {
-	println(c.Query("filterStatus"))
 	var query model.Query
 	err := c.BindQuery(&query)
 	if err != nil {
