@@ -1,14 +1,17 @@
 package model
 
+import "slices"
+
 type Response struct {
 	Task TaskResponse `json:"task"`
 }
 
 type TaskResponse struct {
-	Id    string        `json:"id"`
-	Name  string        `json:"name"`
-	Orga  OrgaResponse  `json:"organisation"`
-	Shift ShiftResponse `json:"shift"`
+	Id     string        `json:"id"`
+	Name   string        `json:"name"`
+	Orga   OrgaResponse  `json:"organisation"`
+	Shift  ShiftResponse `json:"shift"`
+	Status string        `json:"status"`
 }
 
 type OrgaResponse struct {
@@ -22,6 +25,7 @@ type ShiftResponse struct {
 	StartDate string        `json:"startDate"`
 	EndDate   string        `json:"endDate"`
 	Slots     SlotsResponse `json:"slots"`
+	Status    string        `json:"status"`
 }
 
 type SlotsResponse struct {
@@ -42,19 +46,23 @@ func GetOrga(orgaTaskID string, orga []Orga) OrgaResponse {
 	return OrgaResponse{}
 }
 
-func GetShift(shiftTaskIDs []string, shift []Shift) ShiftResponse {
-	for _, s := range shift {
-		for _, shiftTaskID := range shiftTaskIDs {
-			if s.ID == shiftTaskID {
-				return ShiftResponse{
-					Id:        s.ID,
-					StartDate: s.Time.StartDate.String(),
-					EndDate:   s.Time.EndDate.String(),
-					Slots: SlotsResponse{
-						Filled: s.Slots,
-						Total:  s.Slots,
-					},
-				}
+func GetShift(taskId string, shiftsIds []string, shifts []Shift) ShiftResponse {
+	for _, shift := range shiftsIds {
+
+		index := slices.IndexFunc(shifts, func(s Shift) bool {
+			return s.ID == shift
+		})
+		if index != -1 {
+			shift := shifts[index]
+			return ShiftResponse{
+				Id:        shift.ID,
+				StartDate: shift.Time.StartDate.String(),
+				EndDate:   shift.Time.EndDate.String(),
+				Slots: SlotsResponse{
+					Filled: shift.Slots,
+					Total:  shift.Slots,
+				},
+				Status: shift.Status,
 			}
 		}
 	}

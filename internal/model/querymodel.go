@@ -3,7 +3,8 @@ package model
 import "time"
 
 type Query struct {
-	UserId string `json:"userId"`
+	UserId       string `form:"userId"`
+	FilterStatus bool   `form:"filterStatus"`
 }
 
 type Task struct {

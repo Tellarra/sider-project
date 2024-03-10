@@ -46,6 +46,8 @@ func (b Bootstrap) CreateRouter() {
 	if err != nil {
 		log.Fatal("Could not get files ", err)
 	}
+
+	//elasticsearch.IndexDocument(b.EsClientV8.Client, documents)
 	b.Router.GET("/health", b.HealthCheck)
 	b.Router.GET("/tasks", func(ctx *gin.Context) {
 		ui.GetTasks(ctx, documents)

@@ -9,7 +9,9 @@ import (
 )
 
 func GetTasks(c *gin.Context, files []model.DocumentToIndex) {
-	err := c.ShouldBindQuery(&model.Query{})
+	println(c.Query("filterStatus"))
+	var query model.Query
+	err := c.BindQuery(&query)
 	if err != nil {
 		c.JSON(400, gin.H{
 			"message": "Error parsing params",
@@ -67,7 +69,9 @@ func GetTasks(c *gin.Context, files []model.DocumentToIndex) {
 			}
 		}
 	}
-
+	if query.FilterStatus {
+		shift = domain.FilterTasksByStatus(shift)
+	}
 	response := domain.BuildResponse(tasks, orga, shift, user, slots)
 
 	c.JSON(200, response)
