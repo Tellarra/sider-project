@@ -1,6 +1,8 @@
 package domain
 
 import (
+	"errors"
+	"slices"
 	"time"
 
 	"github.com/adrichard/siderproject/internal/model"
@@ -52,4 +54,15 @@ func BuildResponse(tasks []model.Task, orga []model.Orga, shift []model.Shift, u
 		})
 	}
 	return response
+}
+
+func UpdateTask(assigneeId string, taskId string, tasks []model.Task) error {
+	index := slices.IndexFunc(tasks, func(t model.Task) bool {
+		return t.ID == taskId
+	})
+	if index != -1 {
+		tasks[index].AssigneeID = assigneeId
+		return nil
+	}
+	return errors.New("task not found")
 }

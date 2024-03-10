@@ -52,6 +52,9 @@ func (b Bootstrap) CreateRouter() {
 	b.Router.GET("/tasks", func(ctx *gin.Context) {
 		ui.GetTasks(ctx, documents)
 	})
+	b.Router.PATCH("/tasks/:id", func(ctx *gin.Context) {
+		ui.UpdateAssigneeID(ctx, documents)
+	})
 }
 
 func (b Bootstrap) HealthCheck(c *gin.Context) {

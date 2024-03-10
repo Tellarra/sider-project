@@ -17,7 +17,49 @@ func GetTasks(c *gin.Context, files []model.DocumentToIndex) {
 		})
 		return
 	}
+	tasks, orga, shift, user, slots := unmarshalAll(files)
+	if query.FilterStatus {
+		shift = domain.FilterTasksByStatus(shift)
+	}
+	response := domain.BuildResponse(tasks, orga, shift, user, slots)
 
+	c.JSON(200, response)
+}
+
+func UpdateAssigneeID(c *gin.Context, files []model.DocumentToIndex) {
+	taskId := c.Param("id")
+	type AssigneeID struct {
+		AssigneeID string `json:"assigneeId"`
+	}
+	var assigneeId AssigneeID
+	err := c.BindJSON(&assigneeId)
+	if err != nil {
+		c.JSON(400, gin.H{
+			"message": "Error parsing body",
+		})
+		return
+	}
+
+	// update task
+	// get task
+	// update assignee
+	// save task
+	// return response
+
+	tasks, _, _, _, _ := unmarshalAll(files)
+
+	errUpdate := domain.UpdateTask(assigneeId.AssigneeID, taskId, tasks)
+	if errUpdate != nil {
+		c.JSON(400, gin.H{
+			"message": "Error updating task",
+		})
+		return
+	}
+	c.JSON(200, gin.H{
+		"message": "Task updated"})
+}
+
+func unmarshalAll(files []model.DocumentToIndex) ([]model.Task, []model.Orga, []model.Shift, []model.User, []model.Slot) {
 	var tasks []model.Task
 	var orga []model.Orga
 	var shift []model.Shift
@@ -27,51 +69,16 @@ func GetTasks(c *gin.Context, files []model.DocumentToIndex) {
 	for _, file := range files {
 		switch file.Name {
 		case "task":
-			err := json.Unmarshal(file.Data, &tasks)
-			if err != nil {
-				c.JSON(500, gin.H{
-					"message": "Error unmarshalling file",
-				})
-				return
-			}
+			json.Unmarshal(file.Data, &tasks)
 		case "orga":
-			err := json.Unmarshal(file.Data, &orga)
-			if err != nil {
-				c.JSON(500, gin.H{
-					"message": "Error unmarshalling file",
-				})
-				return
-			}
+			json.Unmarshal(file.Data, &orga)
 		case "shift":
-			err := json.Unmarshal(file.Data, &shift)
-			if err != nil {
-				c.JSON(500, gin.H{
-					"message": "Error unmarshalling file",
-				})
-				return
-			}
+			json.Unmarshal(file.Data, &shift)
 		case "user":
-			err := json.Unmarshal(file.Data, &user)
-			if err != nil {
-				c.JSON(500, gin.H{
-					"message": "Error unmarshalling file",
-				})
-				return
-			}
+			json.Unmarshal(file.Data, &user)
 		case "slots":
-			err := json.Unmarshal(file.Data, &slots)
-			if err != nil {
-				c.JSON(500, gin.H{
-					"message": "Error unmarshalling file",
-				})
-				return
-			}
+			json.Unmarshal(file.Data, &slots)
 		}
 	}
-	if query.FilterStatus {
-		shift = domain.FilterTasksByStatus(shift)
-	}
-	response := domain.BuildResponse(tasks, orga, shift, user, slots)
-
-	c.JSON(200, response)
+	return tasks, orga, shift, user, slots
 }
