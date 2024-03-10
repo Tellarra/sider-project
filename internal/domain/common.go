@@ -42,3 +42,15 @@ func GetAllFilesToRightTypes() ([]model.DocumentToIndex, error) {
 
 	return documents, nil
 }
+
+/* func CreateIndex(client *EsClient, indexName string) error {
+	res, err := client.Client.Indices.Create(indexName)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+	if res.IsError() {
+		return fmt.Errorf("error creating index: %s", res.String())
+	}
+	return nil
+} */

@@ -8,7 +8,7 @@ type Query struct {
 }
 
 type Task struct {
-	ID                   string          `json:"_id"`
+	ID                   string          `json:"id"`
 	LogAsID              string          `json:"logAsId"`
 	CreatorID            string          `json:"creatorId"`
 	OrganisationID       string          `json:"organisationId"`

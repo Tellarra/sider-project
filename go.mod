@@ -3,6 +3,7 @@ module github.com/adrichard/siderproject
 go 1.22.0
 
 require (
+	github.com/elastic/go-elasticsearch v0.0.0
 	github.com/elastic/go-elasticsearch/v8 v8.12.1
 	github.com/gin-gonic/gin v1.9.1
 )
