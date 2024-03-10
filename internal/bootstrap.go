@@ -1,9 +1,9 @@
 package internal
 
 import (
+	"database/sql"
 	"log"
 
-	elasticsearch "github.com/adrichard/siderproject/infrastructure"
 	"github.com/adrichard/siderproject/internal/domain"
 	"github.com/adrichard/siderproject/internal/ui"
 	esClient "github.com/elastic/go-elasticsearch/v8"
@@ -11,21 +11,24 @@ import (
 )
 
 type Bootstrap struct {
-	Config     esClient.Config
-	EsClientV8 *elasticsearch.EsClient
-	Router     *gin.Engine
+	Config   esClient.Config
+	DataBase *sql.DB
+	Router   *gin.Engine
 }
 
-func InitBootStrap(host, username, password string) Bootstrap {
-	// I would have make a config.go file to handle the configuration
-	EsClientV8, err := elasticsearch.NewEsClient(host, username, password)
+func InitBootStrap() Bootstrap {
+	// Initialisation de SQLite
+	db, err := sql.Open("sqlite3", "./data/database.sqlite")
 	if err != nil {
-		log.Fatal("Could not create client elasticsearch ", err)
-		panic(err)
+		log.Fatal("Could not open SQLite database: ", err)
+		panic(err) // Panic est généralement utilisé dans l'initialisation. Considérez une gestion d'erreur plus élaborée selon votre cas.
 	}
+
+	// Vous pouvez choisir de tester la connexion avec db.Ping() ici
+	db.Ping()
 	app := Bootstrap{
-		EsClientV8: EsClientV8,
-		Router:     gin.Default(),
+		DataBase: db,
+		Router:   gin.Default(),
 	}
 	return app
 }
