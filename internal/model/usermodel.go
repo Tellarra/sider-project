@@ -37,3 +37,15 @@ type UserEmail struct {
 	Address  string `json:"Address"`
 	Verified bool   `json:"Verified"`
 }
+
+type UserToFeed struct {
+	ID                    string      `json:"id"`
+	Profile               UserProfile `json:"profile"`
+	Emails                []UserEmail `json:"emails"`
+	ActiveOrganisationID  string      `json:"activeOrganisationId"`
+	LinkedOrganisationIds *[]string   `json:"linkedOrganisationIds"` // Assuming this can be null
+}
+
+func (u User) ToUserToFeed() UserToFeed {
+	return UserToFeed(u)
+}

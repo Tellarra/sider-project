@@ -1,12 +1,81 @@
 package domain
 
 import (
+	"bytes"
+	"context"
+	"encoding/json"
 	"errors"
+	"log"
 	"slices"
 	"time"
 
 	"github.com/adrichard/siderproject/internal/model"
+	"github.com/elastic/go-elasticsearch/v8"
 )
+
+func GetDatas(es *elasticsearch.Client, indexName []string) ([]model.TaskToFeed, []model.OrgaToFeed, []model.ShiftToFeed, []model.UserToFeed, []model.SlotToFeed) {
+	var taskResponse []model.TaskToFeed
+
+	// Define the search query (replace with your specific query)
+	var query = map[string]interface{}{
+		"query": map[string]interface{}{
+			"match_all": map[string]interface{}{}, // Match all documents
+		},
+	}
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(query); err != nil {
+		log.Fatalf("Error encoding query: %s", err)
+	}
+	r := bytes.NewReader(buf.Bytes())
+
+	for _, index := range indexName {
+		searchResponse, err := es.Search(
+			es.Search.WithContext(context.Background()),
+			es.Search.WithIndex(index),
+			es.Search.WithBody(r), // Use the byte slice reader
+		)
+		if err != nil {
+			log.Fatalf("Error searching Elasticsearch: %v", err)
+		}
+
+		// Handle the search response
+		if searchResponse.IsError() {
+			var error map[string]interface{}
+			if err := json.NewDecoder(searchResponse.Body).Decode(&error); err != nil {
+				log.Fatalf("Error parsing the response body: %s", err)
+			} else {
+				// Print the response status and error information
+				log.Fatalf("[%s] Error searching index: %s", searchResponse.Status(), error["error"].(map[string]interface{})["reason"])
+			}
+		}
+
+		// Deserialize the response into a map.
+		var r map[string]interface{}
+		if err := json.NewDecoder(searchResponse.Body).Decode(&r); err != nil {
+			log.Fatalf("Error parsing the response body: %s", err)
+		}
+		log.Print(r)
+
+		for _, hit := range r["hits"].(map[string]interface{})["hits"].([]interface{}) {
+			var task model.TaskToFeed
+			source := hit.(map[string]interface{})["_source"]
+			data, err := json.Marshal(source)
+			if err != nil {
+				log.Fatalf("Error marshalling task: %v", err)
+			}
+			err = json.Unmarshal(data, &task)
+			if err != nil {
+				log.Fatalf("Error unmarshalling task: %v", err)
+			}
+			taskResponse = append(taskResponse, task)
+		}
+
+		defer searchResponse.Body.Close()
+	}
+
+	return taskResponse, nil, nil, nil, nil
+}
 
 func FilterTasksByStatus(shifts []model.Shift) []model.Shift {
 	var filteredTasks []model.Shift
