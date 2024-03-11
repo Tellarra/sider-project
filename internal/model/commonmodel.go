@@ -8,6 +8,44 @@ type Query struct {
 }
 
 type Task struct {
+	ID                   string          `json:"_id"`
+	LogAsID              string          `json:"logAsId"`
+	CreatorID            string          `json:"creatorId"`
+	OrganisationID       string          `json:"organisationId"`
+	ShiftIDs             []string        `json:"shiftIds"`
+	CityID               string          `json:"cityId"`
+	ManagerID            string          `json:"managerId"`
+	RequestedSiderIds    []string        `json:"requestedSiderIds"`
+	AssigneeID           string          `json:"assigneeId"`
+	Alias                string          `json:"alias"`
+	Status               string          `json:"status"`
+	Address              Address         `json:"address"`
+	LocationOptions      LocationOptions `json:"locationOptions"`
+	WorkLegalStatus      string          `json:"workLegalStatus"`
+	SelectionStatus      string          `json:"selectionStatus"`
+	RequestedSidersOnly  bool            `json:"requestedSidersOnly"`
+	IsPreSelection       bool            `json:"isPreSelection"`
+	Visible              bool            `json:"visible"`
+	UsersAlreadyNotified bool            `json:"usersAlreadyNotified"`
+	CompanyNotified      bool            `json:"companyNotified"`
+	Type                 string          `json:"type"`
+	SubtaskIds           []string        `json:"subtaskIds"`
+	Purpose              string          `json:"purpose"`
+	DressCode            string          `json:"dressCode"`
+	WorkConditions       string          `json:"workConditions"`
+	Experiences          string          `json:"experiences"`
+	Motive               Motive          `json:"motive"`
+	MissionInformation   string          `json:"missionInformation"`
+	SideNote             string          `json:"sideNote"`
+	PricingID            string          `json:"pricingId"`
+	HourlyRate           float64         `json:"hourlyRate"`
+	SubmittedAt          time.Time       `json:"submittedAt"`
+	LiveAt               time.Time       `json:"liveAt"`
+	PostedAt             time.Time       `json:"postedAt"`
+	Applicants           []Applicant     `json:"applicants"`
+}
+
+type TaskToFeed struct {
 	ID                   string          `json:"id"`
 	LogAsID              string          `json:"logAsId"`
 	CreatorID            string          `json:"creatorId"`
@@ -93,4 +131,8 @@ type StatusHistory struct {
 type DocumentToIndex struct {
 	Data []byte
 	Name string
+}
+
+func (t Task) ToTaskToFeed() TaskToFeed {
+	return TaskToFeed(t)
 }

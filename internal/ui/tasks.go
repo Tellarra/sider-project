@@ -1,14 +1,70 @@
 package ui
 
 import (
+	"bytes"
+	"context"
 	"encoding/json"
+	"log"
 
 	"github.com/adrichard/siderproject/internal/domain"
 	"github.com/adrichard/siderproject/internal/model"
+	"github.com/elastic/go-elasticsearch/esapi"
+	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/gin-gonic/gin"
 )
 
-func GetTasks(c *gin.Context, files []model.DocumentToIndex) {
+func Feed(c *gin.Context, es *elasticsearch.Client) {
+	docs, err := domain.GetAllFilesToRightTypes()
+	if err != nil {
+		log.Fatal("Could not get files ", err)
+	}
+
+	for _, doc := range docs {
+		if doc.Name != "task" {
+			continue
+		}
+
+		var tasks []model.Task
+		err := json.Unmarshal(doc.Data, &tasks)
+		if err != nil {
+			log.Fatalf("Error unmarshalling task: %v", err)
+		}
+
+		for _, task := range tasks {
+			// Convertit l'objet task en JSON pour l'indexation
+			taskToFeed := task.ToTaskToFeed()
+			jsonData, err := json.Marshal(taskToFeed)
+			if err != nil {
+				log.Fatalf("Error marshalling task: %v", err)
+			}
+
+			// Créez une requête d'indexation pour chaque document
+			req := esapi.IndexRequest{
+				Index:   "tasks",
+				Body:    bytes.NewReader(jsonData),
+				Refresh: "true",
+			}
+
+			// Exécutez la requête d'indexation
+			res, err := req.Do(context.Background(), es)
+			if err != nil {
+				log.Fatalf("Error getting response: %s", err)
+			}
+			defer res.Body.Close()
+
+			if res.IsError() {
+				log.Printf("Error indexing task ID %s: %s", task.ID, res.String())
+			} else {
+				log.Printf("Task ID %s indexed.", task.ID)
+			}
+		}
+	}
+	c.JSON(200, gin.H{
+		"message": "Feed done",
+	})
+}
+
+func GetTasks(c *gin.Context, es *elasticsearch.Client) {
 	var query model.Query
 	err := c.BindQuery(&query)
 	if err != nil {
@@ -17,7 +73,7 @@ func GetTasks(c *gin.Context, files []model.DocumentToIndex) {
 		})
 		return
 	}
-	tasks, orga, shift, user, slots := unmarshalAll(files)
+	tasks, orga, shift, user, slots := unmarshalAll(nil)
 	if query.FilterStatus {
 		shift = domain.FilterTasksByStatus(shift)
 	}
