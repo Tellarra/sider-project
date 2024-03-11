@@ -19,10 +19,7 @@ func InitBootStrap() Bootstrap {
 	if err != nil {
 		log.Fatal("Could not create elasticsearch client ", err)
 	}
-	router := ui.InitRouterConfig(ui.RouterConfig{
-		HostAddress: "localhost",
-		HTTPPort:    8080,
-	}, esClientV8)
+	router := ui.InitRouterConfig(ui.RouterConfig{}, esClientV8)
 
 	app := Bootstrap{
 		Config:     esClient.Config{},
