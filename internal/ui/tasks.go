@@ -245,7 +245,7 @@ func GetTasks(c *gin.Context, es *elasticsearch.Client) {
 		})
 		return
 	}
-	tasks, orgas, shifts, users, slots := domain.GetDatas(es, []string{"tasks", "orgas", "shifts", "users", "slots"})
+	tasks, orgas, shifts, users, slots := domain.GetDatasTasks(es, "tasks"), domain.GetDatasOrgas(es, "orgas"), domain.GetDatasShifts(es, "shifts"), domain.GetDatasUsers(es, "users"), domain.GetDatasSlots(es, "slots")
 
 	if query.FilterStatus {
 		shifts = domain.FilterTasksByStatus(shifts)
@@ -255,7 +255,7 @@ func GetTasks(c *gin.Context, es *elasticsearch.Client) {
 	c.JSON(200, response)
 }
 
-func UpdateAssigneeID(c *gin.Context, files []model.DocumentToIndex) {
+func UpdateAssigneeID(c *gin.Context, es *elasticsearch.Client) {
 	taskId := c.Param("id")
 	type AssigneeID struct {
 		AssigneeID string `json:"assigneeId"`
@@ -269,15 +269,7 @@ func UpdateAssigneeID(c *gin.Context, files []model.DocumentToIndex) {
 		return
 	}
 
-	// update task
-	// get task
-	// update assignee
-	// save task
-	// return response
-
-	tasks, _, _, _, _ := unmarshalAll(files)
-
-	errUpdate := domain.UpdateTask(assigneeId.AssigneeID, taskId, tasks)
+	errUpdate := domain.UpdateTask(assigneeId.AssigneeID, taskId, es)
 	if errUpdate != nil {
 		c.JSON(400, gin.H{
 			"message": "Error updating task",

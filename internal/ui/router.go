@@ -29,5 +29,10 @@ func InitRouterConfig(
 			Feed(ctx, es)
 		})
 
+	r.PATCH("/tasks/:id",
+		func(ctx *gin.Context) {
+			UpdateAssigneeID(ctx, es)
+		})
+
 	return r
 }
