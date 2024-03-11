@@ -280,7 +280,7 @@ func UpdateAssigneeID(c *gin.Context, es *elasticsearch.Client) {
 		"message": "Task updated"})
 }
 
-func unmarshalAll(files []model.DocumentToIndex) ([]model.Task, []model.Orga, []model.Shift, []model.User, []model.Slot) {
+/* func unmarshalAll(files []model.DocumentToIndex) ([]model.Task, []model.Orga, []model.Shift, []model.User, []model.Slot) {
 	var tasks []model.Task
 	var orga []model.Orga
 	var shift []model.Shift
@@ -302,4 +302,4 @@ func unmarshalAll(files []model.DocumentToIndex) ([]model.Task, []model.Orga, []
 		}
 	}
 	return tasks, orga, shift, user, slots
-}
+} */

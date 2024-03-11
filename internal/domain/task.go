@@ -4,12 +4,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"log"
 	"time"
 
 	"github.com/adrichard/siderproject/internal/model"
-	"github.com/elastic/go-elasticsearch/esapi"
 	"github.com/elastic/go-elasticsearch/v8"
 )
 
@@ -42,6 +40,7 @@ func GetDatasTasks(es *elasticsearch.Client, indexName string) []model.TaskToFee
 		es.Search.WithContext(context.Background()),
 		es.Search.WithIndex(indexName),
 		es.Search.WithBody(readerTask),
+		es.Search.WithSize(1000),
 	)
 	if err != nil {
 		log.Fatalf("Error searching Elasticsearch: %v", err)
@@ -362,32 +361,7 @@ func BuildResponse(tasks []model.TaskToFeed, orga []model.OrgaToFeed, shift []mo
 }
 
 func UpdateTask(assigneeId string, taskId string, es *elasticsearch.Client) error {
-	// get task
 
-	tasks := GetDatasTasks(es, "tasks")
-	taskToUpdate := []model.TaskToFeed{}
-	for _, task := range tasks {
-		if task.ID == taskId {
-			task.AssigneeID = assigneeId
-			taskToUpdate = append(taskToUpdate, task)
-		}
-	}
-	if len(taskToUpdate) > 0 {
-		UpdateInEs(taskToUpdate, es)
-		return nil
-	}
-	/* index := slices.IndexFunc(tasks, func(t model.TaskToFeed) bool {
-		return t.ID == taskId
-	})
-
-	if index != -1 {
-		tasks[index].AssigneeID = assigneeId
-		UpdateInEs(tasks[index], es)
-	} */
-	return errors.New("task not found")
-}
-
-func UpdateInEs(task []model.TaskToFeed, es *elasticsearch.Client) error {
 	//var taskResponse model.TaskToFeed
 	// general query
 	var query = map[string]interface{}{
@@ -396,7 +370,7 @@ func UpdateInEs(task []model.TaskToFeed, es *elasticsearch.Client) error {
 				"must": []map[string]interface{}{
 					{
 						"match": map[string]interface{}{
-							"id": task[0].ID,
+							"id": taskId,
 						},
 					},
 				},
@@ -414,8 +388,8 @@ func UpdateInEs(task []model.TaskToFeed, es *elasticsearch.Client) error {
 	// To deserialize the response, we need a struct that matches the data in the JSON response.
 	type ResponseES struct {
 		Hits struct {
-			ID   string `json:"_id"`
 			Hits []struct {
+				ID     string           `json:"_id"`
 				Source model.TaskToFeed `json:"_source"`
 			} `json:"hits"`
 		} `json:"hits"`
@@ -452,11 +426,13 @@ func UpdateInEs(task []model.TaskToFeed, es *elasticsearch.Client) error {
 		taskToUpdate := hit.Source // Get the source document
 
 		// Update assigneeId in the source document
-		taskToUpdate.AssigneeID = task[0].AssigneeID // Assuming first element in task has the updated ID
+		taskToUpdate.AssigneeID = assigneeId // Assuming first element in task has the updated ID
 
 		// Construct the update request
 		update := map[string]interface{}{
-			"doc": taskToUpdate, // Include updated document in the request
+			"doc": map[string]interface{}{
+				"assigneeId": taskToUpdate.AssigneeID,
+			},
 		}
 
 		var buf bytes.Buffer
@@ -465,38 +441,24 @@ func UpdateInEs(task []model.TaskToFeed, es *elasticsearch.Client) error {
 			return err
 		}
 		readerUpdate := bytes.NewReader(buf.Bytes())
+		resp, err := es.Update(
+			"tasks",
+			hit.ID,
+			readerUpdate,
+			es.Update.WithRefresh("true"),
+		)
 
-		updateReq := esapi.UpdateRequest{
-			Index:      "tasks",
-			DocumentID: r.Hits.ID, // Use the ID from the search result
-			Body:       readerUpdate,
-			Refresh:    "true",
-		}
-
-		// Execute the update request
-		_, err := es.Update(updateReq.Index, updateReq.DocumentID, readerUpdate)
 		if err != nil {
-			log.Printf("Error updating document %s: %v", r.Hits.ID, err)
-			// Handle individual update errors (optional)
+			log.Printf("Error updating document %s: %v", hit.ID, err)
 		}
+		if resp.IsError() {
+			log.Printf("Error updating document %s: %s", hit.ID, resp.Status())
+		} else {
+			log.Printf("Document %s updated.", hit.ID)
+		}
+		defer resp.Body.Close()
 	}
 	defer searchResponse.Body.Close()
 
 	return nil
-	/* // Définir l'ID du document à modifier
-	docID := "123"
-
-	// Définir les modifications à apporter
-	update := map[string]interface{}{
-		"nom": "Nouveau nom",
-		"age": 30,
-	}
-
-	// Créer la requête de mise à jour
-	req := esapi.UpdateRequest{
-		Index:   index,
-		Body:    strings.NewReader(json.Marshal(update)),
-		Refresh: "true",
-	}
-	return nil */
 }
