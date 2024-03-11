@@ -11,7 +11,7 @@ type TaskResponse struct {
 	Name   string        `json:"name"`
 	Orga   OrgaResponse  `json:"organisation"`
 	Shift  ShiftResponse `json:"shift"`
-	Status string        `json:"status"`
+	Status string        `json:"status,omitempty"`
 }
 
 type OrgaResponse struct {
