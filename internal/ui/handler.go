@@ -104,5 +104,8 @@ func UpdateAssigneeID(c *gin.Context, es *elasticsearch.Client) {
 		return
 	}
 	c.JSON(200, gin.H{
-		"message": "Task updated"})
+		"message":    "Task updated",
+		"assigneeId": assigneeId.AssigneeID,
+		"taskId":     taskId,
+	})
 }
