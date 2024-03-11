@@ -245,15 +245,14 @@ func GetTasks(c *gin.Context, es *elasticsearch.Client) {
 		})
 		return
 	}
-	//tasks, orga, shift, user, slots := unmarshalAll(nil)
-	tasks, _, _, _, _ := domain.GetDatas(es, []string{"tasks"})
-	println(tasks)
-	/* if query.FilterStatus {
-		shift = domain.FilterTasksByStatus(shift)
-	} */
-	//response := domain.BuildResponse(tasks, orga, shift, user, slots)
+	tasks, orgas, shifts, users, slots := domain.GetDatas(es, []string{"tasks", "orgas", "shifts", "users", "slots"})
 
-	c.JSON(200, nil)
+	if query.FilterStatus {
+		shifts = domain.FilterTasksByStatus(shifts)
+	}
+	response := domain.BuildResponse(tasks, orgas, shifts, users, slots)
+
+	c.JSON(200, response)
 }
 
 func UpdateAssigneeID(c *gin.Context, files []model.DocumentToIndex) {

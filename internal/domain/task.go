@@ -14,6 +14,13 @@ import (
 )
 
 func GetDatas(es *elasticsearch.Client, indexName []string) ([]model.TaskToFeed, []model.OrgaToFeed, []model.ShiftToFeed, []model.UserToFeed, []model.SlotToFeed) {
+	type ResponseES struct {
+		Hits struct {
+			Hits []struct {
+				Source model.TaskToFeed `json:"_source"`
+			} `json:"hits"`
+		} `json:"hits"`
+	}
 	var taskResponse []model.TaskToFeed
 
 	// Define the search query (replace with your specific query)
@@ -51,24 +58,14 @@ func GetDatas(es *elasticsearch.Client, indexName []string) ([]model.TaskToFeed,
 		}
 
 		// Deserialize the response into a map.
-		var r map[string]interface{}
+		var r ResponseES
 		if err := json.NewDecoder(searchResponse.Body).Decode(&r); err != nil {
 			log.Fatalf("Error parsing the response body: %s", err)
 		}
 		log.Print(r)
 
-		for _, hit := range r["hits"].(map[string]interface{})["hits"].([]interface{}) {
-			var task model.TaskToFeed
-			source := hit.(map[string]interface{})["_source"]
-			data, err := json.Marshal(source)
-			if err != nil {
-				log.Fatalf("Error marshalling task: %v", err)
-			}
-			err = json.Unmarshal(data, &task)
-			if err != nil {
-				log.Fatalf("Error unmarshalling task: %v", err)
-			}
-			taskResponse = append(taskResponse, task)
+		for _, hit := range r.Hits.Hits {
+			taskResponse = append(taskResponse, hit.Source)
 		}
 
 		defer searchResponse.Body.Close()
@@ -77,8 +74,8 @@ func GetDatas(es *elasticsearch.Client, indexName []string) ([]model.TaskToFeed,
 	return taskResponse, nil, nil, nil, nil
 }
 
-func FilterTasksByStatus(shifts []model.Shift) []model.Shift {
-	var filteredTasks []model.Shift
+func FilterTasksByStatus(shifts []model.ShiftToFeed) []model.ShiftToFeed {
+	var filteredTasks []model.ShiftToFeed
 	for _, shift := range shifts {
 		if shift.Status == "cancelled" {
 			continue
@@ -97,7 +94,7 @@ func FilterTasksByStatus(shifts []model.Shift) []model.Shift {
 	return filteredTasks
 }
 
-func BuildResponse(tasks []model.Task, orga []model.Orga, shift []model.Shift, user []model.User, slots []model.Slot) []model.TaskResponse {
+func BuildResponse(tasks []model.TaskToFeed, orga []model.OrgaToFeed, shift []model.ShiftToFeed, user []model.UserToFeed, slots []model.SlotToFeed) []model.TaskResponse {
 	var response []model.TaskResponse
 	for _, task := range tasks {
 		orga := model.GetOrga(task.OrganisationID, orga)

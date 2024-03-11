@@ -33,7 +33,7 @@ type SlotsResponse struct {
 	Total  int `json:"total"`
 }
 
-func GetOrga(orgaTaskID string, orga []Orga) OrgaResponse {
+func GetOrga(orgaTaskID string, orga []OrgaToFeed) OrgaResponse {
 	for _, o := range orga {
 		if o.ID == orgaTaskID {
 			return OrgaResponse{
@@ -46,10 +46,10 @@ func GetOrga(orgaTaskID string, orga []Orga) OrgaResponse {
 	return OrgaResponse{}
 }
 
-func GetShift(taskId string, shiftsIds []string, shifts []Shift) ShiftResponse {
+func GetShift(taskId string, shiftsIds []string, shifts []ShiftToFeed) ShiftResponse {
 	for _, shift := range shiftsIds {
 
-		index := slices.IndexFunc(shifts, func(s Shift) bool {
+		index := slices.IndexFunc(shifts, func(s ShiftToFeed) bool {
 			return s.ID == shift
 		})
 		if index != -1 {
