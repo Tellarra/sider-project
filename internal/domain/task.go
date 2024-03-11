@@ -101,6 +101,7 @@ func GetDatasOrgas(es *elasticsearch.Client, indexName string) []model.OrgaToFee
 		es.Search.WithContext(context.Background()),
 		es.Search.WithIndex(indexName),
 		es.Search.WithBody(readerOrga),
+		es.Search.WithSize(1000),
 	)
 	if err != nil {
 		log.Fatalf("Error searching Elasticsearch: %v", err)
@@ -161,6 +162,7 @@ func GetDatasShifts(es *elasticsearch.Client, indexName string) []model.ShiftToF
 		es.Search.WithContext(context.Background()),
 		es.Search.WithIndex(indexName),
 		es.Search.WithBody(readerShift),
+		es.Search.WithSize(1000),
 	)
 	if err != nil {
 		log.Fatalf("Error searching Elasticsearch: %v", err)
@@ -221,6 +223,7 @@ func GetDatasUsers(es *elasticsearch.Client, indexName string) []model.UserToFee
 		es.Search.WithContext(context.Background()),
 		es.Search.WithIndex(indexName),
 		es.Search.WithBody(readerUser),
+		es.Search.WithSize(1000),
 	)
 	if err != nil {
 		log.Fatalf("Error searching Elasticsearch: %v", err)
@@ -281,6 +284,7 @@ func GetDatasSlots(es *elasticsearch.Client, indexName string) []model.SlotToFee
 		es.Search.WithContext(context.Background()),
 		es.Search.WithIndex(indexName),
 		es.Search.WithBody(readerSlot),
+		es.Search.WithSize(1000),
 	)
 	if err != nil {
 		log.Fatalf("Error searching Elasticsearch: %v", err)

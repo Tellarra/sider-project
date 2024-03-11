@@ -279,27 +279,3 @@ func UpdateAssigneeID(c *gin.Context, es *elasticsearch.Client) {
 	c.JSON(200, gin.H{
 		"message": "Task updated"})
 }
-
-/* func unmarshalAll(files []model.DocumentToIndex) ([]model.Task, []model.Orga, []model.Shift, []model.User, []model.Slot) {
-	var tasks []model.Task
-	var orga []model.Orga
-	var shift []model.Shift
-	var user []model.User
-	var slots []model.Slot
-
-	for _, file := range files {
-		switch file.Name {
-		case "task":
-			json.Unmarshal(file.Data, &tasks)
-		case "orga":
-			json.Unmarshal(file.Data, &orga)
-		case "shift":
-			json.Unmarshal(file.Data, &shift)
-		case "user":
-			json.Unmarshal(file.Data, &user)
-		case "slots":
-			json.Unmarshal(file.Data, &slots)
-		}
-	}
-	return tasks, orga, shift, user, slots
-} */
