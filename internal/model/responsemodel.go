@@ -10,7 +10,7 @@ type TaskResponse struct {
 	Id     string        `json:"id"`
 	Name   string        `json:"name"`
 	Orga   OrgaResponse  `json:"organisation"`
-	Shift  ShiftResponse `json:"shift"`
+	Shift  ShiftResponse `json:"shift,omitempty"`
 	Status string        `json:"status,omitempty"`
 }
 

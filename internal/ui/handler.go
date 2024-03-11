@@ -35,7 +35,9 @@ func Feed(c *gin.Context, es *elasticsearch.Client) {
 	if err != nil {
 		log.Fatal("Could not get files ", err)
 	}
-
+	c.JSON(200, gin.H{
+		"message": "Starting feed",
+	})
 	for _, doc := range docs {
 		switch doc.Name {
 		case "task":
@@ -74,7 +76,6 @@ func Feed(c *gin.Context, es *elasticsearch.Client) {
 			}
 			infrastructure.FeedSlot(es, slots)
 		}
-
 	}
 	c.JSON(200, gin.H{
 		"message": "Feed done",

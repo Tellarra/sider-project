@@ -12,7 +12,7 @@ import (
 )
 
 // You can modify this if you want to try to feed more data
-const FeedSize = 2000
+const FeedSize = 3000
 
 func FeedTask(es *elasticsearch.Client, tasks []model.Task) {
 	// if index already exists do nothing

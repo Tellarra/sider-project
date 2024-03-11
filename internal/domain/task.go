@@ -326,7 +326,7 @@ func FilterTasksByStatus(shifts []model.ShiftToFeed) []model.ShiftToFeed {
 		// means it's in the past
 		if shift.Time.EndDate.String() < time.Now().String() {
 			shift.Status = "done"
-		} else if shift.Time.StartDate.String() < time.Now().String() {
+		} else if shift.Time.EndDate.String() > time.Now().String() {
 			shift.Status = "ongoing"
 		} else {
 			shift.Status = "upcoming"
